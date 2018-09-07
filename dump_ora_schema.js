@@ -1,5 +1,5 @@
 // dump_ora_schema.js
-// https://github.com/fedapo/dump_ora_schema
+// https://github.com/fedapo/oracle_schema_dumper
 // federico.aponte@gmail.com
 
 /*
