@@ -29,4 +29,12 @@ For a 64-bit Oracle client installation (or for a 32-bit Windows version).
 
 ### To do
 
+### Author
+
+&copy; Federico Aponte <<federico.aponte@gmail.com>> (2011-2018)
+
+### License
+
+[GPL v3 or later](http://www.gnu.org/copyleft/gpl.html)
+
 ### References
