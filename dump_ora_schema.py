@@ -1,5 +1,5 @@
 # dump_ora_schema.py
-# https://github.com/fedapo/oracle_schema_dumper
+# https://github.com/fedapo/oracle-schema-dumper
 # federico.aponte@gmail.com
 
 from __future__ import print_function
