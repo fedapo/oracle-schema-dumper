@@ -1,0 +1,3 @@
+[
+  { "active": true, "schema": "scott", "pwd": "tiger", "tns": "127.0.0.1/orcl", "folder_name": "dump_scott", "comment": "Sample dump for the Scott schema" }
+]
