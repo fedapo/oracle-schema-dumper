@@ -92,16 +92,16 @@ class file_dumper:
     """
 
     def init(self, obj_name, obj_type):
-        log_.write("creating file %s.%s\r\n" % (obj_name, obj_type_fileext_map[obj_type]))
+        log_.write("creating file %s.%s\n" % (obj_name, obj_type_fileext_map[obj_type]))
 
-        self.fstream_ = open("%s/%s/%s.%s" % (dump_path_, obj_type_folder_map[obj_type], obj_name, obj_type_fileext_map[obj_type]), "wb")
+        self.fstream_ = open("%s/%s/%s.%s" % (dump_path_, obj_type_folder_map[obj_type], obj_name, obj_type_fileext_map[obj_type]), "w")
 
     def add_line(self, txt):
         if self.escape_sql_:
             # sql-escape ampersand (&) by doubling it
             txt = txt.replace("&", "&&")
 
-        self.fstream_.write(txt + "\r\n")
+        self.fstream_.write(txt + "\n")
 
     def close(self):
         self.fstream_.close()
@@ -119,7 +119,7 @@ class sql_dumper():
         self.sql_ += txt
 
     def close(self):
-        log_.write("creating db object %s of type %s\r\n" % (obj_name, obj_type))
+        log_.write("creating db object %s of type %s\n" % (obj_name, obj_type))
         self.conn_.execute(self.sql_)
 
 def make_dir_if_none(dirname):
@@ -151,11 +151,11 @@ def main(dump_root, schema_details):
     make_dir_if_none(dump_path_ + "/" + obj_type_folder_map["VIEW"])
     make_dir_if_none(dump_path_ + "/" + obj_type_folder_map["TABLE"])
 
-    log_ = open("%s/db_%s.log" % (dump_path_, schema_details["folder_name"]), "wb")
+    log_ = open("%s/db_%s.log" % (dump_path_, schema_details["folder_name"]), "w")
 
-    log_.write("dump_ora_schema.py\r\n")
-    log_.write("------------- Starting ------------- %s\r\n\r\n" % str(datetime.datetime.now())) # datetime.date.today()
-    log_.write("Dumping schema '%s' - %s\r\n" % (schema_details["schema"], schema_details["comment"]))
+    log_.write("dump_ora_schema.py\n")
+    log_.write("------------- Starting ------------- %s\n\n" % str(datetime.datetime.now())) # datetime.date.today()
+    log_.write("Dumping schema '%s' - %s\n" % (schema_details["schema"], schema_details["comment"]))
 
     # create the connection
     global conn_
@@ -166,8 +166,8 @@ def main(dump_root, schema_details):
     with contextlib.closing(conn_.cursor()) as cursor:
         cursor.execute("select sys_context('USERENV', 'CURRENT_SCHEMA') from dual")
 
-        log_.write("\r\n")
-        log_.write("--------------------------------------------------------------------------------\r\n")
+        log_.write("\n")
+        log_.write("--------------------------------------------------------------------------------\n")
 
         # start the actual work
         file_dump(cursor.fetchone()[0])
@@ -176,7 +176,7 @@ def main(dump_root, schema_details):
 
     conn_.close()
 
-    log_.write("------------- Finished ------------- %s\r\n" % str(datetime.datetime.now())) # datetime.date.today()
+    log_.write("------------- Finished ------------- %s\n" % str(datetime.datetime.now())) # datetime.date.today()
 
 # log some statistics with the count of objects for each type and the count of tables and indexes for each tablespace 
 def write_stats():
@@ -193,13 +193,13 @@ def write_stats():
         count = 0
 
         for column_1, column_2 in crsr.fetchall():
-            log_.write("%s\t%d\r\n" % (column_1, column_2))
+            log_.write("%s\t%d\n" % (column_1, column_2))
             count = count + column_2
 
-    log_.write("Total number of objects\t%d\r\n\r\n" % count)
+    log_.write("Total number of objects\t%d\n\n" % count)
 
-    log_.write("--------------------------------------------------------------------------------\r\n")
-    log_.write("Table distribution across tablespaces:\r\n\r\n")
+    log_.write("--------------------------------------------------------------------------------\n")
+    log_.write("Table distribution across tablespaces:\n\n")
 
     # alter table <table-name> move tablespace <new-tablespace>;
     # alter index <index-name> rebuild tablespace <new-tablespace>;
@@ -212,10 +212,10 @@ def write_stats():
                      " group by tablespace_name")
 
         for tblspace_name, cnt in crsr.fetchall():
-            log_.write("%s\t%d\r\n" % (tblspace_name, cnt))
+            log_.write("%s\t%d\n" % (tblspace_name, cnt))
 
-    log_.write("--------------------------------------------------------------------------------\r\n")
-    log_.write("Index distribution across tablespaces:\r\n\r\n")
+    log_.write("--------------------------------------------------------------------------------\n")
+    log_.write("Index distribution across tablespaces:\n\n")
 
     with contextlib.closing(conn_.cursor()) as crsr:
         crsr.execute("select tablespace_name, count(1)" \
@@ -224,12 +224,12 @@ def write_stats():
                      " group by tablespace_name")
 
         for tblspace_name, cnt in crsr.fetchall():
-            log_.write("%s\t%d\r\n" % (tblspace_name, cnt))
+            log_.write("%s\t%d\n" % (tblspace_name, cnt))
 
 # write the script that collects all other files to apply the dumped structure to a new schema
 def write_master_sql():
-    with open("%s/__master.sql" % dump_path_, "wb") as master_sql:
-        master_sql.write("--\r\n")
+    with open("%s/__master.sql" % dump_path_, "w") as master_sql:
+        master_sql.write("--\n")
         
         with contextlib.closing(conn_.cursor()) as crsr:
             crsr.execute("select object_type, object_name" \
@@ -244,7 +244,7 @@ def write_master_sql():
                          " order by object_type, object_name")
 
             for obj_type, obj_name in crsr.fetchall():
-                master_sql.write("@%s/%s.%s\r\n" % (obj_type_folder_map[obj_type], obj_name, obj_type_fileext_map[obj_type]))
+                master_sql.write("@%s/%s.%s\n" % (obj_type_folder_map[obj_type], obj_name, obj_type_fileext_map[obj_type]))
 
 #------------------------------------------------------------------------------
 
@@ -301,9 +301,9 @@ def dump_source(obj_owner, obj_type, obj_name):
                      " where type = :arg1 and name = :arg2 order by line",
                      arg1 = obj_type, arg2 = obj_name)
 
-        log_.write("creating file %s.%s\r\n" % (obj_name, obj_type_fileext_map[obj_type]))
+        log_.write("creating file %s.%s\n" % (obj_name, obj_type_fileext_map[obj_type]))
 
-        with open("%s/%s/%s.%s" % (dump_path_, obj_type_folder_map[obj_type], obj_name, obj_type_fileext_map[obj_type]), "wb") as fstream:
+        with open("%s/%s/%s.%s" % (dump_path_, obj_type_folder_map[obj_type], obj_name, obj_type_fileext_map[obj_type]), "w") as fstream:
             #dumper.init(obj_name, obj_type)
 
             p = re.compile("  +")
@@ -324,9 +324,9 @@ def dump_source(obj_owner, obj_type, obj_name):
                     curr_text = re_trailingblanks.sub("", curr_text)
 
                     # fixes the problem with types that sometimes have a number of blanks in a row
-                    curr_text = p.sub(" ", curr_text) + "\r\n"
+                    curr_text = p.sub(" ", curr_text) + "\n"
                 else:
-                    curr_text += re_trailingblanks.sub("", fld1) + "\r\n" # remove trailing blanks
+                    curr_text += re_trailingblanks.sub("", fld1) + "\n" # remove trailing blanks
 
             fstream.write("create or replace ")
             fstream.write(re_trailingblanks.sub("", curr_text)) # remove trailing blank lines
@@ -334,7 +334,7 @@ def dump_source(obj_owner, obj_type, obj_name):
             #dumper.add_line(curr_text)
 
             if True:
-                fstream.write("\r\n/")
+                fstream.write("\n/")
                 #dumper.add_line("/")
 
             #dumper.close()
@@ -345,9 +345,9 @@ def dump_source2(obj_owner, obj_type, obj_name):
         rst2.execute("select dbms_metadata.get_ddl(:arg1, :arg2) from dual", \
                      arg1 = obj_type, arg2 = obj_name)
 
-        log_.write("creating file %s.%s\r\n" % (obj_name, obj_type_fileext_map[obj_type]))
+        log_.write("creating file %s.%s\n" % (obj_name, obj_type_fileext_map[obj_type]))
 
-        with open("%s/%s/%s.%s" % (dump_path_, obj_type_folder_map[obj_type], obj_name, obj_type_fileext_map[obj_type]), "wb") as fstream:
+        with open("%s/%s/%s.%s" % (dump_path_, obj_type_folder_map[obj_type], obj_name, obj_type_fileext_map[obj_type]), "w") as fstream:
             #dumper.init(obj_name, obj_type)
 
             fld1 = rst2.fetchone()[0] # first and only record
@@ -365,7 +365,7 @@ def dump_source2(obj_owner, obj_type, obj_name):
             curr_text = re.sub("TABLESPACE \"([A-Za-z0-9_]+)\"", r"TABLESPACE \1", curr_text)
             
             # remove all blanks at the beginning of the string (happens very often)
-            fstream.write(curr_text.strip() + "\r\n")
+            fstream.write(curr_text.strip() + "\n")
             #dumper.add_line(curr_text.strip())
 
             if True:
@@ -395,13 +395,13 @@ def dump_table_grants(fstream, tbl_name):
                 flagFirst = False
             else:
                 if grantee != lastGrantee:
-                    fstream.write("grant %s on %s to %s;\r\n" % (all_privs, tbl_name, lastGrantee))
+                    fstream.write("grant %s on %s to %s;\n" % (all_privs, tbl_name, lastGrantee))
                     all_privs = privilege.lower()
                     lastGrantee = grantee
                 else:
                     all_privs += ", " + privilege.lower()
 
-        fstream.write("grant %s on %s to %s;\r\n" % (all_privs, tbl_name, lastGrantee))
+        fstream.write("grant %s on %s to %s;\n" % (all_privs, tbl_name, lastGrantee))
 
 def dump_table_constraints(fstream, tbl_name):
     with contextlib.closing(conn_.cursor()) as crsr:
@@ -421,13 +421,13 @@ def dump_table_constraints(fstream, tbl_name):
                 constr = ""
 
             if constraint_type == "P":
-                fstream.write("alter table %s\r\n" \
+                fstream.write("alter table %s\n" \
                               "  add%s primary key (" % (tbl_name, constr))
             elif constraint_type == "U":
-                fstream.write("alter table %s\r\n" \
+                fstream.write("alter table %s\n" \
                               "  add%s unique (" % (tbl_name, constr))
             elif constraint_type == "R":
-                fstream.write("alter table %s\r\n" \
+                fstream.write("alter table %s\n" \
                               "  add%s foreign key (" % (tbl_name, constr))
 
             with contextlib.closing(conn_.cursor()) as crsr2:
@@ -447,11 +447,11 @@ def dump_table_constraints(fstream, tbl_name):
 
             if constraint_type in ("P", "U"):
                 if status == "DISABLED":
-                    fstream.write(")\r\n  disable;\r\n")
+                    fstream.write(")\n  disable;\n")
                 else:
-                    fstream.write(")\r\n" \
-                                  "  using index\r\n" \
-                                  "  tablespace %s;\r\n" % tblspace_name)
+                    fstream.write(")\n" \
+                                  "  using index\n" \
+                                  "  tablespace %s;\n" % tblspace_name)
             elif constraint_type == "R":
                 with contextlib.closing(conn_.cursor()) as crsr3:
                     crsr3.execute("select table_name, column_name" \
@@ -467,16 +467,16 @@ def dump_table_constraints(fstream, tbl_name):
                     else:
                         referenced = row[0]
 
-                    fstream.write(")\r\n" \
+                    fstream.write(")\n" \
                                   "  references %s (%s)" % (referenced, row[1]))
 
                 if delete_rule == "CASCADE":
                     fstream.write(" on delete cascade")
 
                 if status == "DISABLED":
-                    fstream.write("\r\n  disable")
+                    fstream.write("\n  disable")
 
-                fstream.write(";\r\n")
+                fstream.write(";\n")
     
 def dump_table_comments(fstream, tbl_name):
     with contextlib.closing(conn_.cursor()) as crsr:
@@ -487,9 +487,9 @@ def dump_table_comments(fstream, tbl_name):
         row = crsr.fetchone()
         
         if row:
-            fstream.write("-- Add comments to the table\r\n")
-            fstream.write("comment on table %s\r\n" % tbl_name)
-            fstream.write("  is '%s';\r\n" % row[0].replace("'", "''")) # escape single quotes
+            fstream.write("-- Add comments to the table\n")
+            fstream.write("comment on table %s\n" % tbl_name)
+            fstream.write("  is '%s';\n" % row[0].replace("'", "''")) # escape single quotes
 
     #--------------------------------------------------------------
 
@@ -506,10 +506,10 @@ def dump_table_comments(fstream, tbl_name):
 
         for fld1, fld2 in crsr.fetchall():
             if flagFirst:
-                fstream.write("-- Add comments to the columns\r\n")
+                fstream.write("-- Add comments to the columns\n")
                 flagFirst = False
-            fstream.write("comment on column %s.%s\r\n" % (tbl_name, fld1))
-            fstream.write("  is '%s';\r\n" % fld2.replace("'", "''")) # escape single quotes
+            fstream.write("comment on column %s.%s\n" % (tbl_name, fld1))
+            fstream.write("  is '%s';\n" % fld2.replace("'", "''")) # escape single quotes
 
 def dump_table(tbl_name, tblspc_name, temp, duration, iot_type):
 #    try:
@@ -525,15 +525,15 @@ def dump_table(tbl_name, tblspc_name, temp, duration, iot_type):
                          " from user_tab_columns" \
                          " where table_name = :arg1 order by column_id", arg1 = tbl_name)
 
-            log_.write("creating file %s.%s\r\n" % (tbl_name, obj_type_fileext_map["TABLE"]))
+            log_.write("creating file %s.%s\n" % (tbl_name, obj_type_fileext_map["TABLE"]))
 
-            with open("%s/%s/%s.%s" % (dump_path_, obj_type_folder_map["TABLE"], tbl_name, obj_type_fileext_map["TABLE"]), "wb") as fstream:
+            with open("%s/%s/%s.%s" % (dump_path_, obj_type_folder_map["TABLE"], tbl_name, obj_type_fileext_map["TABLE"]), "w") as fstream:
                 #dumper.init(tbl_name, "TABLE")
 
                 if temp == "Y":
-                    fstream.write("create global temporary table %s\r\n(\r\n" % tbl_name)
+                    fstream.write("create global temporary table %s\n(\n" % tbl_name)
                 else:
-                    fstream.write("create table %s\r\n(\r\n" % tbl_name)
+                    fstream.write("create table %s\n(\n" % tbl_name)
 
                 for fld1, fld2, fld3, fld4, fld5, fld6, fld7, fld8, fld9 in rst2.fetchall():
                     l_line = ""
@@ -570,36 +570,36 @@ def dump_table(tbl_name, tblspc_name, temp, duration, iot_type):
                     if fld8 != l_count:
                         l_line += ","
 
-                    fstream.write(l_line + "\r\n")
+                    fstream.write(l_line + "\n")
                     #dumper.add_line(l_line)
 
                 fstream.write(")")
 
                 if temp == "Y":
                     if duration == "SYS$TRANSACTION":
-                        fstream.write("\r\n" \
-                                      "on commit delete rows;\r\n")
+                        fstream.write("\n" \
+                                      "on commit delete rows;\n")
                     elif duration == "SYS$SESSION":
-                        fstream.write("\r\n" \
-                                      "on commit preserve rows;\r\n")
+                        fstream.write("\n" \
+                                      "on commit preserve rows;\n")
                 elif iot_type == "IOT":
-                    fstream.write("\r\n" \
-                                  "organization index;\r\n")
+                    fstream.write("\n" \
+                                  "organization index;\n")
                 else:
                     if use_tablespaces_ and tblspc_name != None:
-                        fstream.write("\r\n" \
-                                      "tablespace " + tblspc_name + ";\r\n")
-                        #fstream.write("  pctfree \r\n" + "PCT_FREE")
-                        #fstream.write("  initrans \r\n" + "INI_TRANS")
-                        #fstream.write("  maxtrans \r\n" + "MAX_TRANS")
-                        #fstream.write("  storage\r\n")
-                        #fstream.write("  (\r\n")
-                        #fstream.write("    initial \r\n" + "INITIAL_EXTENT")
-                        #fstream.write("    minextents \r\n" + "MIN_EXTENTS")
-                        #fstream.write("    maxextents \r\n" + "MAX_EXTENTS")
-                        #fstream.write("  );\r\n")
+                        fstream.write("\n" \
+                                      "tablespace " + tblspc_name + ";\n")
+                        #fstream.write("  pctfree \n" + "PCT_FREE")
+                        #fstream.write("  initrans \n" + "INI_TRANS")
+                        #fstream.write("  maxtrans \n" + "MAX_TRANS")
+                        #fstream.write("  storage\n")
+                        #fstream.write("  (\n")
+                        #fstream.write("    initial \n" + "INITIAL_EXTENT")
+                        #fstream.write("    minextents \n" + "MIN_EXTENTS")
+                        #fstream.write("    maxextents \n" + "MAX_EXTENTS")
+                        #fstream.write("  );\n")
                     else:
-                        fstream.write(";\r\n")
+                        fstream.write(";\n")
 
                 #dumper.add_line(");")
 
@@ -612,19 +612,19 @@ def dump_table(tbl_name, tblspc_name, temp, duration, iot_type):
     #    print >> log_, type(inst)     # the exception instance
     #    print >> log_, inst.args      # arguments stored in .args
     #    print >> log_, inst           # __str__ allows args to printed directly
-    #    log_.write("error\r\n")
+    #    log_.write("error\n")
 
 def dump_view(vw_name):
     #try:
         with contextlib.closing(conn_.cursor()) as rst2:
             rst2.execute("select TEXT from user_views where view_name = :arg1", arg1 = vw_name)
 
-            log_.write("creating file %s.%s\r\n" % (vw_name, obj_type_fileext_map["VIEW"]))
+            log_.write("creating file %s.%s\n" % (vw_name, obj_type_fileext_map["VIEW"]))
 
-            with open("%s/%s/%s.%s" % (dump_path_, obj_type_folder_map["VIEW"], vw_name, obj_type_fileext_map["VIEW"]), "wb") as fstream:
+            with open("%s/%s/%s.%s" % (dump_path_, obj_type_folder_map["VIEW"], vw_name, obj_type_fileext_map["VIEW"]), "w") as fstream:
                 #dumper.init(vw_name, "VIEW")
 
-                fstream.write("create or replace view %s as\r\n" % vw_name)
+                fstream.write("create or replace view %s as\n" % vw_name)
                 #dumper.add_line("create or replace view " + vw_name + " as")
 
                 p = re.compile(r"\s+$") # trailing blanks
@@ -632,7 +632,7 @@ def dump_view(vw_name):
                 for fld1 in rst2.fetchall():
                     # right trim the source code and add a semicolon
                     text = p.sub("", str(fld1[0])) + ";" # FED why do we need [0] ???
-                    fstream.write(text + "\r\n")
+                    fstream.write(text + "\n")
                     #dumper.add_line(text)
 
                 #dumper.close()
@@ -640,15 +640,15 @@ def dump_view(vw_name):
     #    print >> log_, type(inst)     # the exception instance
     #    print >> log_, inst.args      # arguments stored in .args
     #    print >> log_, inst           # __str__ allows args to printed directly
-    #    log_.write("error\r\n")
+    #    log_.write("error\n")
 #------------------------------------------------------------------------------
 
 def print_usage():
-    print("dump_ora_schema.py -conf <config_file> -o <output_root_folder>")
+    print("dump_ora_schema.py --conf <config_file> --output_root_folder <output_root_folder>")
 
 if __name__ == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hi:o:", ["help", "input=", "output_root_folder="])
+        opts, args = getopt.getopt(sys.argv[1:], "hi:o:", ["help", "conf=", "output_root_folder="])
     except getopt.GetoptError:
         print_usage()
         sys.exit(2)
@@ -657,13 +657,16 @@ if __name__ == "__main__":
     dump_root = "."
     
     for opt, arg in opts:
-        if opt == "-h":
+        if opt == "-h" or opt == "--help":
             print_usage()
             sys.exit()
-        elif opt == "-conf":
+        elif opt == "-i" or opt == "--conf":
             inputfile = arg
-        elif opt == "-o":
+        elif opt == "-o" or opt == "--output_root_folder":
             dump_root = arg
+
+    print("Config file: %s" % inputfile)
+    print("Root folder: %s" % dump_root)
          
     # read the file with the details of each schema to be dumped
     # the file is a JSON array of objects with the following data
@@ -675,10 +678,10 @@ if __name__ == "__main__":
     #   "folder_name" -> the name of the folder where to put all files
     #   "comment"     -> a free comment
     # }
-    with open(inputfile, "rb") as configfile:
+    with open(inputfile, "r") as configfile:
         g_schemas = json.load(configfile)
 
-    #json.dump(g_schemas, open("test_schema_list.json", "wb"))
+    #json.dump(g_schemas, open("test_schema_list.json", "w"))
 
     for it in g_schemas:
         if it["active"]:

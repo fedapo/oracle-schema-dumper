@@ -13,19 +13,28 @@ The approach taken is somewhat different from the traditional Oracle tools for c
 
 ### Usage
 
+Define in a configuration file the details of the schemas than need to be downloaded. The format is a JSON array of objects as the following.
+
+```
+[
+  { "active": true, "schema": "scott", "pwd": "tiger", "tns": "127.0.0.1/orcl", "folder_name": "dump_scott", "comment": "Sample dump for the Scott schema" }
+, { "active": true, "schema": "prod", "pwd": "Prod123", "tns": "127.0.0.1/orcl", "folder_name": "dump_prod", "comment": "Sample dump for the production schema" }
+]
+```
+
 _Python_:
 
-`dump_ora_schema.py -conf schemas_py.json -o C:/Oracle_dumps/py`
+`dump_ora_schema.py --conf my_schemas.json --output_root_folder C:/Oracle_dumps/py`
 
 _JavaScript_:
 
 For a 32-bit Oracle client installation.
 
-`%SystemRoot%\SysWoW64\cscript.exe dump_ora_schema.js -conf schemas_js.json -o C:/Oracle_dumps/js`
+`%SystemRoot%\SysWoW64\cscript.exe dump_ora_schema.js --conf schemas_js.json --output_root_folder C:/Oracle_dumps/js`
 
 For a 64-bit Oracle client installation (or for a 32-bit Windows version).
 
-`%SystemRoot%\System32\cscript.exe dump_ora_schema.js -conf schemas_js.json -o C:/Oracle_dumps/js`
+`%SystemRoot%\System32\cscript.exe dump_ora_schema.js --conf schemas_js.json --output_root_folder C:/Oracle_dumps/js`
 
 ### To do
 

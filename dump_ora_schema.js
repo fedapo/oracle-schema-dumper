@@ -79,7 +79,7 @@ var use_tablespaces_ = true;
 
 function print_usage()
 {
-  WScript.Echo("dump_ora_schema.js -conf <config_file> -o <output_root_folder>");
+  WScript.Echo("dump_ora_schema.py --conf <config_file> --output_root_folder <output_root_folder>")
 }
 
 //------------------------------------------------------------------------------
@@ -98,22 +98,22 @@ g_dump_root = ".";
 
 if(WScript.Arguments.length >= 2)
 {
-  if(WScript.Arguments(0) == "-conf")
+  if(WScript.Arguments(0) == "-i" || WScript.Arguments(0) == "--conf")
     g_inputfile = WScript.Arguments(1);
-  else if(WScript.Arguments(0) == "-o")
+  else if(WScript.Arguments(0) == "-o" || WScript.Arguments(0) == "--output_root_folder")
     g_dump_root = WScript.Arguments(1);  
 
   if(WScript.Arguments.length == 4)
   {
-    if(WScript.Arguments(2) == "-conf")
+    if(WScript.Arguments(2) == "-i" || WScript.Arguments(2) == "--conf")
       g_inputfile = WScript.Arguments(3);
-    else if(WScript.Arguments(2) == "-o")
+    else if(WScript.Arguments(2) == "-o" || WScript.Arguments(2) == "--output_root_folder")
       g_dump_root = WScript.Arguments(3);  
   }
 }
 
-WScript.Echo("g_inputfile = " + g_inputfile);
-WScript.Echo("g_dump_root = " + g_dump_root);
+WScript.Echo("configuration file = " + g_inputfile);
+WScript.Echo("output root folder = " + g_dump_root);
 
 var fso = new ActiveXObject("Scripting.FileSystemObject");
 var src_file = fso.OpenTextFile(g_inputfile, IOMode.ForReading);
